@@ -5,7 +5,8 @@
 REST Incantation is a powerful Python-based tool designed to simplify interactions with REST APIs. It automates the
 parsing of OpenAPI documentation, manages authentication processes, and provides a user-friendly interface for API
 exploration and testing.
-Features
+
+### Features
 
     OpenAPI Parsing: Supports both openapi.json and openapi.yaml formats.
     Dynamic Authentication: Identifies and implements various authentication methods.
