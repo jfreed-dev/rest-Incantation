@@ -1,16 +1,25 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 
+# Initialize Flask app
 app = Flask(__name__)
 
+# Other route definitions...
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Code for your index route
+    ...
 
 @app.route('/submit-url', methods=['POST'])
 def submit_url():
-    base_url = request.form['base_url']
-    # Here, you can add code to process the base URL or pass it to another function
-    return f"Base URL submitted: {base_url}"
+    # Code for handling the base API URL submission
+    ...
 
+# New route for credentials
+@app.route('/credentials', methods=['GET', 'POST'])
+def credentials():
+    # Code for handling the credentials
+    ...
+
+# Running the Flask app
 if __name__ == "__main__":
     app.run(debug=True)
