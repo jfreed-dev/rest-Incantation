@@ -21,7 +21,8 @@ def load_token():
 def renew_token():
     # This function should implement the logic to renew the token
     # Here's a simple example using client credentials
-    response = requests.post(TOKEN_ENDPOINT, auth=(CLIENT_ID, CLIENT_SECRET))
+    response = requests.post(TOKEN_ENDPOINT, data={'grant_type': 'client_credentials'},
+                             auth=(CLIENT_ID, CLIENT_SECRET))
     if response.status_code == 200:
         token_info = response.json()
         save_token(token_info)
