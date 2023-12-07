@@ -20,6 +20,7 @@ To install REST Incantation, clone the repository and set up the environment:
 bash
 
 git clone [https://github.com/jfreed-dev/REST-Incantation.git]
+
 cd rest-incantation
 
 # Set up your Python virtual environment and activate it
