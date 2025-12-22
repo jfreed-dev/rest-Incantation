@@ -47,8 +47,16 @@ __pycache__/
 .env
 .venv/
 venv/
+.eggs/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.python-version
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 
 # Logs
