@@ -1,51 +1,55 @@
 # REST Incantation
 
-### Overview
+[![Tests](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/tests.yml/badge.svg)](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/tests.yml)
+[![Qodana](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/qodana_code_quality.yml/badge.svg)](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/qodana_code_quality.yml)
 
-REST Incantation is a powerful Python-based tool designed to simplify interactions with REST APIs. It automates the
-parsing of OpenAPI documentation, manages authentication processes, and provides a user-friendly interface for API
-exploration and testing.
+REST Incantation is a Flask-based tool for exploring REST APIs from their OpenAPI documentation. It supports fetching OpenAPI docs from a base URL, detecting auth schemes, and guiding users through credential entry.
 
-### Features
+## Features
+- OpenAPI parsing for JSON and YAML (`openapi.json`, `openapi.yaml`, `openapi.yml`).
+- Authentication scheme detection via OpenAPI security schemes.
+- Token helper utilities for client-credential flows.
+- Simple web UI for API URL entry and credential collection.
 
-    OpenAPI Parsing: Supports both openapi.json and openapi.yaml formats.
-    Dynamic Authentication: Identifies and implements various authentication methods.
-    Bearer Token Management: Automatically stores, renews, and manages bearer tokens.
-    User-Friendly GUI: Intuitive interface for inputting API URLs and credentials.
-    API Request Builder: Facilitates building and testing of API requests.
-
-### Installation
-
-To install REST Incantation, clone the repository and set up the environment:
-
-bash
-
-git clone [https://github.com/jfreed-dev/REST-Incantation.git]
-
-cd rest-incantation
-
-# Set up your Python virtual environment and activate it
-
+## Quick Start
+```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-### Usage
-
-After installation, start the application:
-
-bash
-
 python app.py
+```
 
-Navigate to the provided local URL in your web browser to access the GUI.
-Contributing
+Open `http://127.0.0.1:5000` in your browser.
 
-Contributions are welcome! Please read our CONTRIBUTING.md for details on our code of conduct and the process for
-submitting pull requests.
+## Configuration
+Secrets are loaded from `config/secrets.yaml` (ignored by git). Start from the example:
+```bash
+cp config/secrets.example.yaml config/secrets.yaml
+```
 
-### License
+Supported keys:
+- `flask_secret_key`
+- `token_endpoint`
+- `client_id`
+- `client_secret`
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-Acknowledgments
+You can also override the Flask secret with `FLASK_SECRET_KEY` or point to a different file with `REST_INCANTATION_SECRETS`.
 
-    Thanks to everyone who has contributed to this project!
-    Special thanks to the OpenAPI Initiative for their excellent documentation standards.
+## Development
+- Main entry point: `app.py`
+- Templates: `templates/`
+- Auth helpers: `credential_method.py`, `bearer_tokens.py`
+
+## Testing
+```bash
+pytest
+```
+
+## Contributing
+See `CONTRIBUTING.md` for setup and PR expectations.
+
+## Security
+Report vulnerabilities per `SECURITY.md`. Do not commit secrets or `token.json`.
+
+## License
+MIT License. See `LICENSE`.

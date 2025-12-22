@@ -4,10 +4,16 @@
     <title>Submit Base API URL</title>
 </head>
 <body>
-    <h1>Submit Base API URL</h1>
-    <form method="post" action="/submit-url-action"> <!-- This action should be the route that processes the form data -->
-        <label for="base_url">Base API URL:</label>
-        <input type="text" id="base_url" name="base_url" placeholder="Enter Base API URL" required>
+    <h1>Provide OpenAPI Location</h1>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+    <form method="post" action="/submit-url">
+        <label for="base_url">Base API URL (optional):</label>
+        <input type="text" id="base_url" name="base_url" placeholder="https://api.example.com" value="{{ base_url }}">
+        <br>
+        <label for="openapi_url">OpenAPI URL (optional):</label>
+        <input type="text" id="openapi_url" name="openapi_url" placeholder="https://api.example.com/openapi.json" value="{{ openapi_url }}">
         <input type="submit" value="Submit">
     </form>
 </body>

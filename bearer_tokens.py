@@ -1,49 +1,82 @@
-import requests
 import json
+import logging
+import os
+from typing import Callable, Dict, Optional
+
+import requests
+import yaml
 from apscheduler.schedulers.background import BackgroundScheduler
 
-TOKEN_FILE = 'token.json'
-TOKEN_ENDPOINT = 'https://api.example.com/token'  # Replace with your actual token endpoint
-CLIENT_ID = 'your_client_id'  # Replace with your actual client ID
-CLIENT_SECRET = 'your_client_secret'  # Replace with your actual client secret
+TOKEN_FILE = "token.json"
+SECRETS_FILE = os.environ.get("REST_INCANTATION_SECRETS", "config/secrets.yaml")
 
-def save_token(token_info):
-    with open(TOKEN_FILE, 'w') as file:
+
+def save_token(token_info: Dict[str, str], token_file: str = TOKEN_FILE) -> None:
+    with open(token_file, "w") as file:
         json.dump(token_info, file)
 
-def load_token():
+
+def load_token(token_file: str = TOKEN_FILE) -> Optional[Dict[str, str]]:
     try:
-        with open(TOKEN_FILE, 'r') as file:
+        with open(token_file, "r") as file:
             return json.load(file)
     except FileNotFoundError:
         return None
 
-def renew_token():
-    # This function should implement the logic to renew the token
-    # Here's a simple example using client credentials
-    response = requests.post(TOKEN_ENDPOINT, data={'grant_type': 'client_credentials'},
-                             auth=(CLIENT_ID, CLIENT_SECRET))
-    if response.status_code == 200:
-        token_info = response.json()
-        save_token(token_info)
-        return token_info
-    else:
-        # Handle error appropriately
+
+def load_secrets(file_path: str = SECRETS_FILE) -> Dict[str, str]:
+    if not os.path.exists(file_path):
+        return {}
+    try:
+        with open(file_path, "r") as file:
+            return yaml.safe_load(file) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        logging.error("Error loading secrets file %s: %s", file_path, exc)
+        return {}
+
+
+def renew_token(
+    token_endpoint: Optional[str] = None,
+    client_id: Optional[str] = None,
+    client_secret: Optional[str] = None,
+    token_file: str = TOKEN_FILE,
+    secrets_file: str = SECRETS_FILE,
+) -> Optional[Dict[str, str]]:
+    secrets = load_secrets(secrets_file)
+    token_endpoint = token_endpoint or secrets.get("token_endpoint")
+    client_id = client_id or secrets.get("client_id")
+    client_secret = client_secret or secrets.get("client_secret")
+    if not token_endpoint or not client_id or not client_secret:
+        logging.error("Missing token configuration in %s.", secrets_file)
         return None
 
-def get_token():
-    token_info = load_token()
-    if not token_info or 'access_token' not in token_info:
-        return renew_token()
-    # Add logic to check if the token is expired and needs renewal
-    # ...
-    return token_info['access_token']
+    response = requests.post(
+        token_endpoint,
+        data={"grant_type": "client_credentials"},
+        auth=(client_id, client_secret),
+        timeout=10,
+    )
+    if response.status_code == 200:
+        token_info = response.json()
+        save_token(token_info, token_file=token_file)
+        return token_info
+    return None
 
-# Initialize the scheduler for automatic token renewal
-scheduler = BackgroundScheduler()
-scheduler.add_job(renew_token, 'interval', hours=1)  # Adjust the interval as needed
-scheduler.start()
 
-# Example usage
-token = get_token()
-print(f"Current token: {token}")
+def get_token(token_file: str = TOKEN_FILE) -> Optional[str]:
+    token_info = load_token(token_file=token_file)
+    if not token_info or "access_token" not in token_info:
+        token_info = renew_token(token_file=token_file)
+    if not token_info:
+        return None
+    return token_info["access_token"]
+
+
+def start_token_renewal(
+    renew_fn: Callable[[], Optional[Dict[str, str]]],
+    interval_hours: int = 1,
+) -> BackgroundScheduler:
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(renew_fn, "interval", hours=interval_hours)
+    scheduler.start()
+    return scheduler
