@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issues
+    url: https://github.com/jfreed-dev/REST-Incantation/security/policy
+    about: Report vulnerabilities via the security policy.

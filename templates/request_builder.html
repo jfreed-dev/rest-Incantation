@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Request Builder</title>
+</head>
+<body>
+    <h1>Request Builder</h1>
+    <p>Base URL: {{ base_url }}</p>
+    <p>OpenAPI URL: {{ openapi_url }}</p>
+
+    <h2>Credentials</h2>
+    {% if credentials %}
+        <ul>
+            {% for name, value in credentials.items() %}
+                <li>{{ name }}: {{ value }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No credentials provided.</p>
+    {% endif %}
+</body>
+</html>
