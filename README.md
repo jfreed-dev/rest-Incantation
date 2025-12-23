@@ -1,7 +1,11 @@
 # REST Incantation
 
-[![Tests](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/tests.yml/badge.svg)](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/tests.yml)
+[![Tests](https://github.com/jfreed-dev/rest-Incantation/actions/workflows/tests.yml/badge.svg)](https://github.com/jfreed-dev/rest-Incantation/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/jfreed-dev/rest-Incantation/graph/badge.svg)](https://codecov.io/gh/jfreed-dev/rest-Incantation)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 
 REST Incantation is a Flask-based tool for exploring REST APIs from their OpenAPI documentation. It supports fetching OpenAPI docs from a base URL, detecting auth schemes, and guiding users through credential entry.
 
