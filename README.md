@@ -7,6 +7,7 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 [![Security: pip-audit](https://img.shields.io/badge/security-pip--audit-purple.svg)](https://github.com/pypa/pip-audit)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://github.com/jfreed-dev/rest-Incantation/tree/main/docker)
 
 REST Incantation is a Flask-based tool for exploring REST APIs from their OpenAPI documentation. It supports fetching OpenAPI docs from a base URL, detecting auth schemes, and guiding users through credential entry.
 
