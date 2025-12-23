@@ -12,7 +12,7 @@ REST Incantation is a Flask-based tool for exploring REST APIs from their OpenAP
 - Simple web UI for API URL entry and credential collection.
 
 ## Requirements
-- Python 3.x
+- Python 3.11+
 - A reachable OpenAPI endpoint (or a local JSON/YAML spec file)
 
 ## Quick Start
@@ -61,13 +61,28 @@ token = get_token()
 ```
 
 ## Development
+
+### Project Structure
 - Main entry point: `app.py`
 - Templates: `templates/`
 - Auth helpers: `credential_method.py`, `bearer_tokens.py`
 
+### Setup Pre-commit Hooks
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Hooks run automatically on commit:
+- **ruff** - linting and formatting
+- **mypy** - type checking
+
 ## Testing
 ```bash
 pytest
+
+# With coverage
+pytest --cov=. --cov-report=term
 ```
 
 ## Docker
@@ -92,8 +107,12 @@ docker compose run --rm test
 docker compose build
 ```
 
-## Static Analysis
-Without a token, it runs locally in CI and uploads the report artifact.
+## CI Checks
+All checks run automatically on push and pull requests:
+- **pytest** - tests with coverage reporting
+- **ruff** - linting and formatting
+- **mypy** - type checking
+- **bandit** - security scanning
 
 ## Troubleshooting
 - OpenAPI fetch fails: confirm the base URL is reachable and that `/openapi.json` or `/openapi.yaml` exists.
