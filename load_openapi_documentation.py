@@ -1,7 +1,8 @@
-from typing import Union
 import json
-import yaml
 import logging
+from typing import Union
+
+import yaml
 
 
 def load_openapi_documentation(file_path: str) -> Union[dict, list, None]:
