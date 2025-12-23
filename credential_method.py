@@ -7,7 +7,9 @@ def find_authentication_method(api_documentation: Dict[str, Any]) -> Dict[str, s
     Return a mapping of security scheme names to auth types.
     """
     try:
-        security_schemes = api_documentation.get("components", {}).get("securitySchemes", {})
+        security_schemes = api_documentation.get("components", {}).get(
+            "securitySchemes", {}
+        )
         if not security_schemes:
             return {}
         auth_methods: Dict[str, str] = {}
