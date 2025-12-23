@@ -7,6 +7,9 @@ Thanks for contributing to REST Incantation. This project focuses on a clean Fla
   - `python -m venv .venv`
   - `source .venv/bin/activate`
   - `pip install -r requirements.txt`
+- Set up pre-commit hooks (recommended):
+  - `pip install pre-commit`
+  - `pre-commit install`
 - Run the app locally:
   - `python app.py`
 - Run tests:
