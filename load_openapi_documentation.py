@@ -19,6 +19,6 @@ def load_openapi_documentation(file_path: str) -> Union[dict, list, None]:
                 return json.load(file)
         else:
             raise ValueError("Unsupported file format")
-    except (OSError, IOError, yaml.YAMLError, json.JSONDecodeError) as e:
+    except (OSError, IOError, ValueError, yaml.YAMLError, json.JSONDecodeError) as e:
         logging.error(f"Error loading OpenAPI documentation: {e}")
         return None

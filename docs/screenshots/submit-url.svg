@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360">
+  <rect width="720" height="360" fill="#f8f4ef"/>
+  <rect x="80" y="60" width="560" height="240" fill="#ffffff" stroke="#222222" stroke-width="2"/>
+  <rect x="80" y="60" width="560" height="40" fill="#f2a65a"/>
+  <text x="100" y="86" font-family="Arial, sans-serif" font-size="16" fill="#111111">REST Incantation</text>
+  <text x="100" y="140" font-family="Arial, sans-serif" font-size="18" fill="#111111">Enter Base API URL</text>
+  <rect x="100" y="165" width="440" height="30" fill="#ffffff" stroke="#555555" stroke-width="1"/>
+  <text x="110" y="186" font-family="Arial, sans-serif" font-size="14" fill="#666666">https://api.example.com</text>
+  <rect x="100" y="210" width="140" height="32" fill="#1d3557"/>
+  <text x="135" y="232" font-family="Arial, sans-serif" font-size="14" fill="#ffffff">Submit</text>
+  <text x="100" y="270" font-family="Arial, sans-serif" font-size="12" fill="#444444">Optional OpenAPI URL supported</text>
+</svg>
