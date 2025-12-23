@@ -1,6 +1,7 @@
 # REST Incantation
 
 [![Tests](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/tests.yml/badge.svg)](https://github.com/jfreed-dev/REST-Incantation/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/jfreed-dev/rest-Incantation/graph/badge.svg)](https://codecov.io/gh/jfreed-dev/rest-Incantation)
 
 REST Incantation is a Flask-based tool for exploring REST APIs from their OpenAPI documentation. It supports fetching OpenAPI docs from a base URL, detecting auth schemes, and guiding users through credential entry.
 
