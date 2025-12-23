@@ -27,6 +27,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.get("flask_secret_ke
 if not app.secret_key:
     app.secret_key = "dev-secret-key"
     import warnings
+
     warnings.warn(
         "Using insecure default secret key. "
         "Set FLASK_SECRET_KEY or flask_secret_key in config/secrets.yaml for production.",
@@ -54,7 +55,11 @@ def fetch_openapi_documentation(base_url: str, explicit_url: str | None = None):
             content_type = response.headers.get("content-type", "")
             if "json" in content_type or candidate_url.endswith(".json"):
                 return json.loads(response.text), candidate_url, None
-            if "yaml" in content_type or "yml" in content_type or candidate_url.endswith((".yaml", ".yml")):
+            if (
+                "yaml" in content_type
+                or "yml" in content_type
+                or candidate_url.endswith((".yaml", ".yml"))
+            ):
                 return yaml.safe_load(response.text), candidate_url, None
             try:
                 return json.loads(response.text), candidate_url, None
@@ -83,7 +88,9 @@ def submit_url():
             openapi_url="",
         )
 
-    api_documentation, source_url, error = fetch_openapi_documentation(base_url, openapi_url or None)
+    api_documentation, source_url, error = fetch_openapi_documentation(
+        base_url, openapi_url or None
+    )
     if not api_documentation:
         return render_template(
             "submit_url.html",
