@@ -205,8 +205,6 @@ class TestStartTokenRenewal:
 
             scheduler = start_token_renewal(mock_renew_fn, interval_hours=2)
 
-            mock_scheduler.add_job.assert_called_once_with(
-                mock_renew_fn, "interval", hours=2
-            )
+            mock_scheduler.add_job.assert_called_once_with(mock_renew_fn, "interval", hours=2)
             mock_scheduler.start.assert_called_once()
             assert scheduler == mock_scheduler
