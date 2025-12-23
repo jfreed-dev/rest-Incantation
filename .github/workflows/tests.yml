@@ -82,3 +82,12 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           fail_ci_if_error: false
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - name: Build Docker image
+        run: docker compose -f docker/docker-compose.yml build
+      - name: Run tests in Docker
+        run: docker compose -f docker/docker-compose.yml run --rm test
