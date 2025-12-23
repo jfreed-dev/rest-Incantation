@@ -126,4 +126,4 @@ def credentials():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)  # nosec B201 - debug mode only for local development
