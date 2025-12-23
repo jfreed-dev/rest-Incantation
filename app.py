@@ -23,7 +23,15 @@ def load_secrets(file_path: str = SECRETS_FILE) -> dict:
 
 
 secrets = load_secrets()
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.get("flask_secret_key", "dev-secret-key"))
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.get("flask_secret_key"))
+if not app.secret_key:
+    app.secret_key = "dev-secret-key"
+    import warnings
+    warnings.warn(
+        "Using insecure default secret key. "
+        "Set FLASK_SECRET_KEY or flask_secret_key in config/secrets.yaml for production.",
+        stacklevel=1,
+    )
 
 
 def fetch_openapi_documentation(base_url: str, explicit_url: str | None = None):
