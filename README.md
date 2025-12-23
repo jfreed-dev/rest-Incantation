@@ -70,6 +70,28 @@ token = get_token()
 pytest
 ```
 
+## Docker
+
+### Run the App
+```bash
+docker compose up
+```
+Open `http://127.0.0.1:5000` in your browser.
+
+### Run Tests in Docker
+```bash
+# Using the test script
+./scripts/docker-test.sh
+
+# Or manually
+docker compose run --rm test
+```
+
+### Build Only
+```bash
+docker compose build
+```
+
 ## Static Analysis
 Without a token, it runs locally in CI and uploads the report artifact.
 

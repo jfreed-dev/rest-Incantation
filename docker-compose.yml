@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_SECRET_KEY=docker-dev-key
+    volumes:
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  test:
+    build: .
+    command: pytest -v --cov=. --cov-report=term
+    environment:
+      - FLASK_SECRET_KEY=test-key
+    profiles:
+      - test
