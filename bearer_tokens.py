@@ -50,17 +50,21 @@ def renew_token(
         logging.error("Missing token configuration in %s.", secrets_file)
         return None
 
-    response = requests.post(
-        token_endpoint,
-        data={"grant_type": "client_credentials"},
-        auth=(client_id, client_secret),
-        timeout=10,
-    )
-    if response.status_code == 200:
-        token_info = response.json()
-        save_token(token_info, token_file=token_file)
-        return token_info
-    return None
+    try:
+        response = requests.post(
+            token_endpoint,
+            data={"grant_type": "client_credentials"},
+            auth=(client_id, client_secret),
+            timeout=10,
+        )
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        logging.error("Token renewal failed: %s", exc)
+        return None
+
+    token_info = response.json()
+    save_token(token_info, token_file=token_file)
+    return token_info
 
 
 def get_token(token_file: str = TOKEN_FILE) -> Optional[str]:

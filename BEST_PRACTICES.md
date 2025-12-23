@@ -13,14 +13,20 @@
 - Follow PEP 8 and keep modules single‑purpose.
 - Avoid import‑time side effects; expose functions and wire them in `app.py`.
 - Keep Flask routes small; move complex logic into helper modules.
+- Keep static analysis config in `qodana.yaml` and prefer CI checks over local overrides.
 
 ## Testing
 - Add tests for parsing, auth detection, and route behavior.
 - Use markers (`unit`, `integration`, `smoke`) to keep test intent clear.
+- Keep tests in `tests/` with `test_*.py` naming.
 
 ## Git & Releases
 - Use clear, imperative commit messages.
 - Tag releases (`vX.Y.Z`) after CI is green.
+
+## Documentation
+- Keep README steps aligned with actual commands and files.
+- Add screenshots for UI changes and store them under `docs/screenshots/`.
 
 ## Architecture Notes
 - `app.py` is the Flask entry point and wires HTTP routes to helpers.

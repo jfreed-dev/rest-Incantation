@@ -9,6 +9,8 @@ Thanks for contributing to REST Incantation. This project focuses on a clean Fla
   - `pip install -r requirements.txt`
 - Run the app locally:
   - `python app.py`
+- Run tests:
+  - `pytest`
 
 ## Project Conventions
 - Follow PEP 8 style and use 4-space indentation.
@@ -22,6 +24,7 @@ Thanks for contributing to REST Incantation. This project focuses on a clean Fla
 ## Pull Requests
 - Include a clear summary and testing notes (or "not tested").
 - Add screenshots for UI changes.
+- Keep documentation aligned with code changes (README, best practices, or config docs).
 - Link related issues if applicable.
 
 ## Security
