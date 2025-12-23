@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
-from app import app, fetch_openapi_documentation, load_secrets
+from app import app, fetch_openapi_documentation, load_secrets, OPENAPI_CANDIDATE_PATHS
 
 
 @pytest.fixture
@@ -174,8 +174,82 @@ class TestFetchOpenapiDocumentation:
             doc, url, error = fetch_openapi_documentation("https://api.example.com")
 
         assert doc == {"openapi": "3.0.0"}
+        # Third candidate is openapi.yml
         assert url == "https://api.example.com/openapi.yml"
         assert error is None
+
+    def test_fetch_finds_rest_prefixed_spec(self):
+        """Test that /rest/openapi.json path is discovered (e.g., EcoStruxure IT API)."""
+        mock_response = Mock()
+        mock_response.text = '{"openapi": "3.0.0", "info": {"title": "REST API"}}'
+        mock_response.headers = {"content-type": "application/json"}
+
+        def side_effect(url, timeout):
+            if "/rest/openapi.json" in url:
+                return mock_response
+            raise requests.RequestException("Not found")
+
+        with patch("app.requests.get", side_effect=side_effect):
+            doc, url, error = fetch_openapi_documentation("https://api.example.com")
+
+        assert doc == {"openapi": "3.0.0", "info": {"title": "REST API"}}
+        assert url == "https://api.example.com/rest/openapi.json"
+        assert error is None
+
+    def test_fetch_finds_swagger_json(self):
+        """Test that swagger.json path is discovered."""
+        mock_response = Mock()
+        mock_response.text = '{"swagger": "2.0"}'
+        mock_response.headers = {"content-type": "application/json"}
+
+        def side_effect(url, timeout):
+            if url.endswith("/swagger.json"):
+                return mock_response
+            raise requests.RequestException("Not found")
+
+        with patch("app.requests.get", side_effect=side_effect):
+            doc, url, error = fetch_openapi_documentation("https://api.example.com")
+
+        assert doc == {"swagger": "2.0"}
+        assert url == "https://api.example.com/swagger.json"
+        assert error is None
+
+    def test_fetch_finds_spring_api_docs(self):
+        """Test that Spring/SpringDoc paths are discovered."""
+        mock_response = Mock()
+        mock_response.text = '{"openapi": "3.0.0"}'
+        mock_response.headers = {"content-type": "application/json"}
+
+        def side_effect(url, timeout):
+            if "/v3/api-docs" in url:
+                return mock_response
+            raise requests.RequestException("Not found")
+
+        with patch("app.requests.get", side_effect=side_effect):
+            doc, url, error = fetch_openapi_documentation("https://api.example.com")
+
+        assert doc == {"openapi": "3.0.0"}
+        assert url == "https://api.example.com/v3/api-docs"
+        assert error is None
+
+
+class TestOpenapiCandidatePaths:
+    def test_candidate_paths_includes_common_locations(self):
+        """Verify that common OpenAPI/Swagger spec locations are included."""
+        assert "/openapi.json" in OPENAPI_CANDIDATE_PATHS
+        assert "/openapi.yaml" in OPENAPI_CANDIDATE_PATHS
+        assert "/swagger.json" in OPENAPI_CANDIDATE_PATHS
+        assert "/rest/openapi.json" in OPENAPI_CANDIDATE_PATHS
+        assert "/api/openapi.json" in OPENAPI_CANDIDATE_PATHS
+        assert "/v3/api-docs" in OPENAPI_CANDIDATE_PATHS
+        assert "/swagger/v1/swagger.json" in OPENAPI_CANDIDATE_PATHS
+        assert "/.well-known/openapi.json" in OPENAPI_CANDIDATE_PATHS
+
+    def test_candidate_paths_prioritizes_openapi_over_swagger(self):
+        """OpenAPI paths should come before Swagger paths for modern APIs."""
+        openapi_idx = OPENAPI_CANDIDATE_PATHS.index("/openapi.json")
+        swagger_idx = OPENAPI_CANDIDATE_PATHS.index("/swagger.json")
+        assert openapi_idx < swagger_idx
 
     def test_fetch_all_urls_fail(self):
         with patch("app.requests.get") as mock_get:
