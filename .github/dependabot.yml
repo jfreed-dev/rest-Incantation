@@ -6,6 +6,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "deps"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -13,3 +18,8 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
