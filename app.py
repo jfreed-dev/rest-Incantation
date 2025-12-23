@@ -35,17 +35,66 @@ if not app.secret_key:
     )
 
 
+# Common OpenAPI/Swagger specification paths across different frameworks
+OPENAPI_CANDIDATE_PATHS = [
+    # OpenAPI 3.x standard locations
+    "/openapi.json",
+    "/openapi.yaml",
+    "/openapi.yml",
+    # Swagger 2.x standard locations
+    "/swagger.json",
+    "/swagger.yaml",
+    "/swagger.yml",
+    # Common API prefix variations
+    "/api/openapi.json",
+    "/api/openapi.yaml",
+    "/api/swagger.json",
+    "/api/swagger.yaml",
+    # REST prefix (e.g., EcoStruxure IT)
+    "/rest/openapi.json",
+    "/rest/openapi.yaml",
+    "/rest/swagger.json",
+    # Versioned API paths
+    "/v1/openapi.json",
+    "/v1/swagger.json",
+    "/v2/openapi.json",
+    "/v2/swagger.json",
+    "/v3/openapi.json",
+    "/v3/swagger.json",
+    "/api/v1/openapi.json",
+    "/api/v2/openapi.json",
+    "/api/v3/openapi.json",
+    # Spring/SpringDoc paths
+    "/v2/api-docs",
+    "/v3/api-docs",
+    "/api-docs",
+    "/api-docs.json",
+    "/api-docs.yaml",
+    # ASP.NET / Swashbuckle paths
+    "/swagger/v1/swagger.json",
+    "/swagger/v2/swagger.json",
+    "/swagger/docs/v1",
+    # FastAPI / Starlette
+    "/docs/openapi.json",
+    # Quarkus
+    "/q/openapi",
+    "/q/openapi.json",
+    "/q/openapi.yaml",
+    # Well-known location (emerging standard)
+    "/.well-known/openapi.json",
+    "/.well-known/openapi.yaml",
+    "/.well-known/openapi",
+]
+
+
 def fetch_openapi_documentation(base_url: str, explicit_url: str | None = None):
     if explicit_url:
         candidate_urls = [explicit_url]
     elif base_url.endswith((".json", ".yaml", ".yml")):
         candidate_urls = [base_url]
     else:
-        candidate_urls = [
-            f"{base_url.rstrip('/')}/openapi.json",
-            f"{base_url.rstrip('/')}/openapi.yaml",
-            f"{base_url.rstrip('/')}/openapi.yml",
-        ]
+        base = base_url.rstrip("/")
+        candidate_urls = [f"{base}{path}" for path in OPENAPI_CANDIDATE_PATHS]
 
     last_error = "Unable to fetch OpenAPI documentation."
     for candidate_url in candidate_urls:
