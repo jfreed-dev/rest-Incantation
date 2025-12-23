@@ -92,25 +92,63 @@ pytest --cov=. --cov-report=term
 
 ## Docker
 
-### Run the App
+### Prerequisites
+- [Docker Engine](https://docs.docker.com/engine/install/) 20.10+ or [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Docker Compose](https://docs.docker.com/compose/install/) v2.0+ (included with Docker Desktop)
+
+Verify installation:
 ```bash
-docker compose up
+docker --version        # Docker version 20.10+
+docker compose version  # Docker Compose version v2.0+
+```
+
+### Quick Start with Docker
+```bash
+# Clone the repository
+git clone https://github.com/jfreed-dev/rest-Incantation.git
+cd rest-Incantation
+
+# Build and run
+cd docker
+docker compose up --build
 ```
 Open `http://127.0.0.1:5000` in your browser.
+
+### Run in Background (Detached Mode)
+```bash
+cd docker
+docker compose up -d --build
+
+# View logs
+docker compose logs -f
+
+# Stop the application
+docker compose down
+```
 
 ### Run Tests in Docker
 ```bash
 # Using the test script
-./scripts/docker-test.sh
+./docker/docker-test.sh
 
 # Or manually
+cd docker
 docker compose run --rm test
 ```
 
 ### Build Only
 ```bash
+cd docker
 docker compose build
 ```
+
+### Configuration with Docker
+To use custom secrets, create `config/secrets.yaml` before starting:
+```bash
+cp config/secrets.example.yaml config/secrets.yaml
+# Edit config/secrets.yaml with your values
+```
+The config directory is mounted read-only into the container.
 
 ## CI Checks
 All checks run automatically on push and pull requests:
