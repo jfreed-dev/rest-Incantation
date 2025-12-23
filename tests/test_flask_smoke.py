@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
-from app import app, fetch_openapi_documentation, load_secrets, OPENAPI_CANDIDATE_PATHS
+from app import OPENAPI_CANDIDATE_PATHS, app, fetch_openapi_documentation, load_secrets
 
 
 @pytest.fixture
