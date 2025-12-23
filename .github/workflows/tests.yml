@@ -54,7 +54,7 @@ jobs:
       - name: Run bandit
         run: bandit -c pyproject.toml -r .
       - name: Run pip-audit
-        run: pip-audit --require-hashes=false
+        run: pip-audit
 
   pytest:
     runs-on: ubuntu-latest
