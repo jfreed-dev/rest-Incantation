@@ -4,5 +4,4 @@ APScheduler==3.11.2
 PyYAML==6.0.3
 pytest==9.0.2
 authlib==1.6.5
-python-jose[cryptography]==3.4.0
 cryptography==44.0.1
