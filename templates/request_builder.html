@@ -1,22 +1,115 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Request Builder</title>
-</head>
-<body>
-    <h1>Request Builder</h1>
-    <p>Base URL: {{ base_url }}</p>
-    <p>OpenAPI URL: {{ openapi_url }}</p>
+{% extends "base.html" %}
 
-    <h2>Credentials</h2>
-    {% if credentials %}
-        <ul>
+{% block title %}Request Builder - REST Incantation{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('credentials') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Credentials
+        </a>
+    </div>
+
+    <!-- Success Banner -->
+    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div class="flex">
+            <svg class="h-5 w-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">Authentication configured successfully!</p>
+            </div>
+        </div>
+    </div>
+
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Request Builder</h1>
+
+    <!-- API Information -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">API Information</h2>
+        <dl class="space-y-3">
+            <div>
+                <dt class="text-sm font-medium text-gray-500">Base URL</dt>
+                <dd class="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-3 py-2 rounded">{{ base_url }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">OpenAPI Specification</dt>
+                <dd class="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-3 py-2 rounded">{{ openapi_url }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Configured Credentials -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Configured Credentials</h2>
+
+        {% if credentials %}
+        <div class="space-y-3">
             {% for name, value in credentials.items() %}
-                <li>{{ name }}: {{ value }}</li>
+            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                <span class="text-sm font-medium text-gray-700">{{ name }}</span>
+                <span class="text-sm text-gray-500 font-mono">
+                    {% if value %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Configured
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Not set
+                    </span>
+                    {% endif %}
+                </span>
+            </div>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No credentials provided.</p>
-    {% endif %}
-</body>
-</html>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500">No credentials configured.</p>
+        {% endif %}
+    </div>
+
+    <!-- Generated Headers Preview -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Generated Headers</h2>
+        <p class="text-sm text-gray-600 mb-4">These headers will be included with your API requests:</p>
+
+        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre class="text-sm text-green-400 font-mono">{% if credentials %}{% for name, value in credentials.items() %}{% if value %}{{ name }}: {{ '***' if 'secret' in name.lower() or 'password' in name.lower() or 'token' in name.lower() else value[:20] + '...' if value|length > 20 else value }}
+{% endif %}{% endfor %}{% else %}# No authentication headers configured{% endif %}</pre>
+        </div>
+    </div>
+
+    <!-- Token Renewal Status -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Token Renewal</h2>
+                <p class="text-sm text-gray-600 mt-1">Automatic token refresh status</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                Not configured
+            </span>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-4">
+        <a href="{{ url_for('index') }}"
+           class="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Another API
+        </a>
+        <button type="button"
+                class="flex-1 flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+            Make Request
+        </button>
+    </div>
+</div>
+{% endblock %}

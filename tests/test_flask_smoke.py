@@ -21,7 +21,7 @@ class TestIndexRoute:
         response = client.get("/")
 
         assert response.status_code == 200
-        assert b"Enter Base API URL" in response.data
+        assert b"API Base URL" in response.data
 
 
 class TestSubmitUrlRoute:
@@ -100,7 +100,7 @@ class TestCredentialsRoute:
         response = client.get("/credentials")
 
         assert response.status_code == 200
-        assert b"Enter Credentials" in response.data
+        assert b"Configure Authentication" in response.data
         assert b"api_key" in response.data
         assert b"oauth" in response.data
 
