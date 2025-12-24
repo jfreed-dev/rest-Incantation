@@ -1,0 +1,153 @@
+# GitHub Labels Configuration
+# Apply with: gh label create -f labels.yml (or use GitHub Actions)
+
+# Issue Types
+- name: bug
+  color: "d73a4a"
+  description: Something isn't working
+
+- name: enhancement
+  color: "a2eeef"
+  description: New feature or request
+
+- name: documentation
+  color: "0075ca"
+  description: Improvements or additions to documentation
+
+- name: question
+  color: "d876e3"
+  description: Further information is requested
+
+# Vendor Profiles
+- name: vendor-profile
+  color: "5319e7"
+  description: Related to vendor API profiles
+
+- name: vendor/cisco
+  color: "049fd9"
+  description: Cisco APIs (Meraki, SD-WAN, Umbrella)
+
+- name: vendor/palo-alto
+  color: "fa6e1e"
+  description: Palo Alto APIs (Prisma, Panorama, Strata)
+
+- name: vendor/juniper
+  color: "84bd00"
+  description: Juniper APIs (Mist, Security Director)
+
+- name: vendor/schneider
+  color: "3dcd58"
+  description: Schneider Electric APIs (EcoStruxure IT)
+
+- name: vendor/aws
+  color: "ff9900"
+  description: Amazon Web Services APIs
+
+- name: vendor/azure
+  color: "0089d6"
+  description: Microsoft Azure APIs
+
+# Technology Areas
+- name: technology
+  color: "1d76db"
+  description: New technology or capability
+
+- name: auth/oauth2
+  color: "fbca04"
+  description: OAuth 2.0 authentication
+
+- name: auth/api-key
+  color: "fef2c0"
+  description: API key authentication
+
+- name: auth/aws-sigv4
+  color: "ff9900"
+  description: AWS Signature Version 4
+
+- name: pagination
+  color: "c5def5"
+  description: API pagination handling
+
+- name: rate-limiting
+  color: "f9d0c4"
+  description: Rate limit tracking and handling
+
+# Priority
+- name: priority/critical
+  color: "b60205"
+  description: Blocking issue, needs immediate attention
+
+- name: priority/high
+  color: "d93f0b"
+  description: Important, should be addressed soon
+
+- name: priority/medium
+  color: "fbca04"
+  description: Normal priority
+
+- name: priority/low
+  color: "0e8a16"
+  description: Nice to have, can wait
+
+# Status
+- name: status/needs-triage
+  color: "ededed"
+  description: Needs initial review and categorization
+
+- name: status/in-progress
+  color: "0052cc"
+  description: Currently being worked on
+
+- name: status/blocked
+  color: "b60205"
+  description: Blocked by external dependency
+
+- name: status/needs-info
+  color: "d876e3"
+  description: Waiting for more information
+
+- name: status/ready-for-review
+  color: "0e8a16"
+  description: Ready for code review
+
+# Contribution
+- name: good-first-issue
+  color: "7057ff"
+  description: Good for newcomers
+
+- name: help-wanted
+  color: "008672"
+  description: Extra attention is needed
+
+- name: mentor-available
+  color: "5319e7"
+  description: A maintainer can help guide this work
+
+# Special
+- name: security
+  color: "d73a4a"
+  description: Security-related issue
+
+- name: breaking-change
+  color: "b60205"
+  description: Introduces breaking changes
+
+- name: dependencies
+  color: "0366d6"
+  description: Pull requests that update a dependency
+
+- name: ci/cd
+  color: "555555"
+  description: CI/CD pipeline related
+
+- name: duplicate
+  color: "cfd3d7"
+  description: This issue or pull request already exists
+
+- name: wontfix
+  color: "ffffff"
+  description: This will not be worked on
+
+- name: invalid
+  color: "e4e669"
+  description: This doesn't seem right

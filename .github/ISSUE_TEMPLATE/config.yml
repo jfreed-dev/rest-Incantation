@@ -1,5 +1,17 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: Security issues
-    url: https://github.com/jfreed-dev/REST-Incantation/security/policy
-    about: Report vulnerabilities via the security policy.
+  - name: Security Vulnerabilities
+    url: https://github.com/jfreed-dev/rest-Incantation/security/policy
+    about: Report security issues privately via the security policy.
+
+  - name: Questions & Discussions
+    url: https://github.com/jfreed-dev/rest-Incantation/discussions
+    about: Ask questions, share ideas, or discuss implementation approaches.
+
+  - name: Vendor API Documentation
+    url: https://github.com/jfreed-dev/rest-Incantation/blob/main/docs/VENDOR_PROFILES.md
+    about: View existing vendor profiles and implementation plans.
+
+  - name: Contributing Guide
+    url: https://github.com/jfreed-dev/rest-Incantation/blob/main/CONTRIBUTING.md
+    about: Read contribution guidelines before submitting.

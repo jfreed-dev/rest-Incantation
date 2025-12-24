@@ -68,3 +68,7 @@ logs/
 token.json
 config/secrets.yaml
 config/secrets.local.yaml
+
+# Local docker artifacts
+docker/eco-struxure-it-api-client/
+docker/openapi.json

@@ -1,0 +1,186 @@
+{# OAuth 2.0 authentication form with flow selection #}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4" x-data="{ selectedFlow: '{{ scheme.available_flow_types[0] if scheme.available_flow_types else 'clientCredentials' }}' }">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">{{ scheme.name }}</h3>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+            OAuth 2.0
+        </span>
+    </div>
+
+    {% if scheme.description %}
+    <p class="text-sm text-gray-600 mb-4">{{ scheme.description }}</p>
+    {% endif %}
+
+    {# Flow selector #}
+    {% if scheme.flows|length > 1 %}
+    <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Flow</label>
+        <select x-model="selectedFlow"
+                name="{{ scheme.name }}_flow"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+            {% for flow_type in scheme.available_flow_types %}
+            <option value="{{ flow_type }}">
+                {% if flow_type == 'clientCredentials' %}Client Credentials
+                {% elif flow_type == 'authorizationCode' %}Authorization Code
+                {% elif flow_type == 'implicit' %}Implicit (Legacy)
+                {% elif flow_type == 'password' %}Password Grant
+                {% else %}{{ flow_type }}{% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% else %}
+    <input type="hidden" name="{{ scheme.name }}_flow" value="{{ scheme.available_flow_types[0] if scheme.available_flow_types else 'clientCredentials' }}">
+    {% endif %}
+
+    {# Client Credentials Flow #}
+    <div x-show="selectedFlow === 'clientCredentials'" x-cloak class="space-y-4">
+        <div class="p-3 bg-orange-50 rounded-md border border-orange-200 mb-4">
+            <p class="text-sm text-orange-700">
+                <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                Machine-to-machine authentication. No user interaction required.
+            </p>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+            <input type="text"
+                   name="{{ scheme.name }}_client_id"
+                   placeholder="Enter client ID"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client Secret</label>
+            <input type="password"
+                   name="{{ scheme.name }}_client_secret"
+                   placeholder="Enter client secret"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        {% if scheme.flows.clientCredentials %}
+        <p class="text-xs text-gray-500">
+            Token URL: <span class="font-mono">{{ scheme.flows.clientCredentials.token_url }}</span>
+        </p>
+        {% endif %}
+    </div>
+
+    {# Authorization Code Flow #}
+    <div x-show="selectedFlow === 'authorizationCode'" x-cloak class="space-y-4">
+        <div class="p-3 bg-blue-50 rounded-md border border-blue-200 mb-4">
+            <p class="text-sm text-blue-700">
+                <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+                User authentication flow. You will be redirected to authorize.
+            </p>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+            <input type="text"
+                   name="{{ scheme.name }}_client_id"
+                   placeholder="Enter client ID"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client Secret <span class="text-gray-400">(optional for PKCE)</span></label>
+            <input type="password"
+                   name="{{ scheme.name }}_client_secret"
+                   placeholder="Enter client secret"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox"
+                   id="{{ scheme.name }}_use_pkce"
+                   name="{{ scheme.name }}_use_pkce"
+                   checked
+                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+            <label for="{{ scheme.name }}_use_pkce" class="ml-2 block text-sm text-gray-700">
+                Use PKCE <span class="text-gray-500">(recommended)</span>
+            </label>
+        </div>
+        {% if scheme.flows.authorizationCode %}
+        <div class="text-xs text-gray-500 space-y-1">
+            <p>Authorization URL: <span class="font-mono">{{ scheme.flows.authorizationCode.authorization_url }}</span></p>
+            <p>Token URL: <span class="font-mono">{{ scheme.flows.authorizationCode.token_url }}</span></p>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Password Flow #}
+    <div x-show="selectedFlow === 'password'" x-cloak class="space-y-4">
+        <div class="p-3 bg-yellow-50 rounded-md border border-yellow-200 mb-4">
+            <p class="text-sm text-yellow-700">
+                <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                Direct password exchange. Use only with trusted applications.
+            </p>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input type="text"
+                   name="{{ scheme.name }}_username"
+                   placeholder="Enter username"
+                   autocomplete="username"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input type="password"
+                   name="{{ scheme.name }}_password"
+                   placeholder="Enter password"
+                   autocomplete="current-password"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+            <input type="text"
+                   name="{{ scheme.name }}_client_id"
+                   placeholder="Enter client ID"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+    </div>
+
+    {# Implicit Flow #}
+    <div x-show="selectedFlow === 'implicit'" x-cloak class="space-y-4">
+        <div class="p-3 bg-red-50 rounded-md border border-red-200 mb-4">
+            <p class="text-sm text-red-700">
+                <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                <strong>Deprecated:</strong> Implicit flow is insecure. Use Authorization Code with PKCE instead.
+            </p>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+            <input type="text"
+                   name="{{ scheme.name }}_client_id"
+                   placeholder="Enter client ID"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+        </div>
+    </div>
+
+    {# Scope selection #}
+    {% set first_flow = scheme.flows.values()|first if scheme.flows else none %}
+    {% if first_flow and first_flow.scopes %}
+    <div class="mt-6 pt-4 border-t border-gray-200">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Scopes</label>
+        <div class="space-y-2 max-h-40 overflow-y-auto">
+            {% for scope, description in first_flow.scopes.items() %}
+            <label class="flex items-start">
+                <input type="checkbox"
+                       name="{{ scheme.name }}_scopes"
+                       value="{{ scope }}"
+                       class="h-4 w-4 mt-0.5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <span class="ml-2">
+                    <span class="text-sm font-medium text-gray-700">{{ scope }}</span>
+                    {% if description %}
+                    <span class="block text-xs text-gray-500">{{ description }}</span>
+                    {% endif %}
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
