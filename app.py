@@ -62,9 +62,7 @@ def get_storage():
     """Get storage backend for current request context."""
     if "storage" not in g:
         session_storage = SessionStorage(session)
-        g.storage = HybridStorage(
-            session_storage=session_storage, file_storage=_file_storage
-        )
+        g.storage = HybridStorage(session_storage=session_storage, file_storage=_file_storage)
     return g.storage
 
 
@@ -219,23 +217,15 @@ def credentials():
         # Handle OAuth2 specific fields
         for name, scheme in auth_schemes.items():
             if scheme.get("scheme_type") == "oauth2":
-                submitted[f"{name}_client_id"] = request.form.get(
-                    f"{name}_client_id", ""
-                )
-                submitted[f"{name}_client_secret"] = request.form.get(
-                    f"{name}_client_secret", ""
-                )
+                submitted[f"{name}_client_id"] = request.form.get(f"{name}_client_id", "")
+                submitted[f"{name}_client_secret"] = request.form.get(f"{name}_client_secret", "")
                 submitted[f"{name}_flow"] = request.form.get(f"{name}_flow", "")
 
         # Handle Basic auth
         for name, scheme in auth_schemes.items():
             if scheme.get("scheme_type") == "http" and scheme.get("scheme") == "basic":
-                submitted[f"{name}_username"] = request.form.get(
-                    f"{name}_username", ""
-                )
-                submitted[f"{name}_password"] = request.form.get(
-                    f"{name}_password", ""
-                )
+                submitted[f"{name}_username"] = request.form.get(f"{name}_username", "")
+                submitted[f"{name}_password"] = request.form.get(f"{name}_password", "")
 
         session["credentials"] = submitted
 
@@ -288,9 +278,7 @@ def credentials():
             for key, value in data.items():
                 setattr(self, key, value)
 
-    wrapped_schemes = {
-        name: SchemeWrapper(scheme) for name, scheme in auth_schemes.items()
-    }
+    wrapped_schemes = {name: SchemeWrapper(scheme) for name, scheme in auth_schemes.items()}
 
     return render_template(
         "credentials.html", auth_methods=auth_methods, auth_schemes=wrapped_schemes
@@ -406,15 +394,11 @@ def oauth_authorize(scheme_name):
 
     if "authorizationCode" in flows:
         flow_config = flows["authorizationCode"]
-        auth_url = flow_config.get("authorization_url") or flow_config.get(
-            "authorizationUrl"
-        )
+        auth_url = flow_config.get("authorization_url") or flow_config.get("authorizationUrl")
         token_url = flow_config.get("token_url") or flow_config.get("tokenUrl")
     elif "implicit" in flows:
         flow_config = flows["implicit"]
-        auth_url = flow_config.get("authorization_url") or flow_config.get(
-            "authorizationUrl"
-        )
+        auth_url = flow_config.get("authorization_url") or flow_config.get("authorizationUrl")
 
     if not auth_url:
         return render_template(
@@ -458,9 +442,11 @@ def oauth_authorize(scheme_name):
     }
 
     # Build authorization URL
-    code_challenge = base64.urlsafe_b64encode(
-        hashlib.sha256(code_verifier.encode()).digest()
-    ).rstrip(b"=").decode()
+    code_challenge = (
+        base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
+        .rstrip(b"=")
+        .decode()
+    )
 
     params = {
         "client_id": client_id,
@@ -512,9 +498,7 @@ def refresh_token():
                 flows = scheme.get("flows", {})
                 token_url = None
                 for flow_name, flow_config in flows.items():
-                    token_url = flow_config.get("token_url") or flow_config.get(
-                        "tokenUrl"
-                    )
+                    token_url = flow_config.get("token_url") or flow_config.get("tokenUrl")
                     if token_url:
                         break
 
@@ -533,9 +517,7 @@ def refresh_token():
                         # Update stored credentials
                         credentials[name] = token_response.access_token
                         if token_response.refresh_token:
-                            credentials[f"{name}_refresh_token"] = (
-                                token_response.refresh_token
-                            )
+                            credentials[f"{name}_refresh_token"] = token_response.refresh_token
                         session["credentials"] = credentials
 
                         return {"success": True, "message": "Token refreshed"}

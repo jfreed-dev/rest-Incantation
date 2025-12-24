@@ -158,9 +158,7 @@ class TokenManager:
             self.schedule_renewal(api_id, config.renewal_interval_minutes)
         elif initial_token and initial_token.expires_in:
             # Auto-schedule based on token expiry
-            renewal_seconds = max(
-                60, initial_token.expires_in - config.buffer_seconds
-            )
+            renewal_seconds = max(60, initial_token.expires_in - config.buffer_seconds)
             self.schedule_renewal(api_id, renewal_seconds / 60)
 
     def unregister_api(self, api_id: str) -> None:

@@ -1,6 +1,5 @@
 """Tests for auth.schemes module."""
 
-
 from auth.schemes import (
     APIKeyScheme,
     HTTPScheme,
@@ -346,7 +345,9 @@ class TestOpenIDConnectScheme:
 
         assert isinstance(scheme, OpenIDConnectScheme)
         assert scheme.name == "OIDC"
-        assert scheme.openid_connect_url == "https://auth.example.com/.well-known/openid-configuration"
+        assert (
+            scheme.openid_connect_url == "https://auth.example.com/.well-known/openid-configuration"
+        )
         assert scheme.description == "OpenID Connect"
         assert scheme.scheme_type == "openIdConnect"
 
