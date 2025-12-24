@@ -616,4 +616,4 @@ def get_flow_handler(flow_type: str) -> OAuth2FlowHandler:
     if handler_class is None:
         raise ValueError(f"Unknown OAuth2 flow type: {flow_type}")
 
-    return handler_class()
+    return handler_class()  # type: ignore[abstract]

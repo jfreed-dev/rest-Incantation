@@ -310,7 +310,7 @@ class TestFileStorage:
     def test_directory_creation(self, temp_dir):
         """Storage should create nested directories."""
         nested_path = Path(temp_dir) / "nested" / "path"
-        storage = FileStorage(str(nested_path), "key")
+        FileStorage(str(nested_path), "key")  # Creates directory on init
 
         assert nested_path.exists()
 

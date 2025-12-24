@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -22,7 +21,6 @@ from auth.oauth2_flows import (
     PasswordFlow,
     RefreshTokenFlow,
     TokenResponse,
-    get_flow_handler,
 )
 from auth.storage import StorageBackend, StoredToken
 
@@ -245,8 +243,8 @@ class TokenManager:
         # Remove existing job if present
         try:
             self._scheduler.remove_job(job_id)
-        except Exception:
-            pass  # Job might not exist
+        except Exception:  # nosec B110 - job removal is best-effort
+            pass
 
         # Add new job
         self._scheduler.add_job(
@@ -275,8 +273,8 @@ class TokenManager:
         try:
             self._scheduler.remove_job(job_id)
             logger.info("Cancelled token renewal for %s", api_id)
-        except Exception:
-            pass  # Job might not exist
+        except Exception:  # nosec B110 - job removal is best-effort
+            pass
 
     def renew_now(self, api_id: str) -> Optional[TokenResponse]:
         """Force immediate token renewal.
@@ -436,8 +434,8 @@ class TokenManager:
         flow_type = config.oauth2_flow.lower().replace("-", "_")
 
         if flow_type in ("client_credentials", "clientcredentials"):
-            flow = ClientCredentialsFlow()
-            return flow.authenticate(
+            cc_flow = ClientCredentialsFlow()
+            return cc_flow.authenticate(
                 token_url=config.token_url,
                 client_id=config.client_id,
                 client_secret=config.client_secret or "",
@@ -446,8 +444,8 @@ class TokenManager:
         elif flow_type == "password":
             if not config.username or not config.password:
                 raise ValueError("Password flow requires username and password")
-            flow = PasswordFlow()
-            return flow.authenticate(
+            pw_flow = PasswordFlow()
+            return pw_flow.authenticate(
                 token_url=config.token_url,
                 username=config.username,
                 password=config.password,

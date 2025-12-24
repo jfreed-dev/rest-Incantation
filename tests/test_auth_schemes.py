@@ -1,6 +1,5 @@
 """Tests for auth.schemes module."""
 
-import pytest
 
 from auth.schemes import (
     APIKeyScheme,

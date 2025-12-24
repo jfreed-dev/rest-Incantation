@@ -1,12 +1,11 @@
 """Tests for auth.token_manager module."""
 
-from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
 
 from auth.oauth2_flows import OAuth2Error, TokenResponse
-from auth.storage import SessionStorage, StoredToken
+from auth.storage import SessionStorage
 from auth.token_manager import TokenConfig, TokenManager
 
 

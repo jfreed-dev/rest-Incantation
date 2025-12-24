@@ -10,9 +10,8 @@ import base64
 import hashlib
 import json
 import logging
-import os
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -92,11 +91,7 @@ class StoredCredentials:
     scheme_name: str
     scheme_type: str
     values: Dict[str, str]
-    custom_headers: Dict[str, str] = None
-
-    def __post_init__(self):
-        if self.custom_headers is None:
-            self.custom_headers = {}
+    custom_headers: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""

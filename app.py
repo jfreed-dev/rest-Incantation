@@ -1,24 +1,23 @@
+import base64
+import hashlib
 import json
 import os
 from urllib.parse import urlencode
 
 import requests
 import yaml
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, g, redirect, render_template, request, session, url_for
 
 from auth import (
     AuthorizationCodeFlow,
-    ClientCredentialsFlow,
     CustomHeaderManager,
     HybridStorage,
     OAuth2Error,
-    PasswordFlow,
     RefreshTokenFlow,
     TokenManager,
-    build_request_headers,
     generate_api_id,
-    parse_security_schemes,
 )
+from auth.storage import FileStorage, SessionStorage
 from credential_method import find_authentication_method, get_detailed_auth_methods
 
 SECRETS_FILE = os.environ.get("REST_INCANTATION_SECRETS", "config/secrets.yaml")
@@ -49,9 +48,6 @@ if not app.secret_key:
     )
 
 # Storage and token manager (initialized lazily for request context)
-from auth.storage import SessionStorage, FileStorage
-from flask import g
-
 _file_storage = FileStorage(
     storage_dir=os.environ.get("REST_INCANTATION_STORAGE_DIR", "data/credentials"),
     encryption_key=app.secret_key,
@@ -59,7 +55,7 @@ _file_storage = FileStorage(
 custom_header_manager = CustomHeaderManager()
 
 # Token manager without storage (will be set per-request if needed)
-token_manager = TokenManager(storage=None)
+token_manager = TokenManager(storage=None)  # type: ignore[arg-type]
 
 
 def get_storage():
@@ -462,9 +458,6 @@ def oauth_authorize(scheme_name):
     }
 
     # Build authorization URL
-    import hashlib
-    import base64
-
     code_challenge = base64.urlsafe_b64encode(
         hashlib.sha256(code_verifier.encode()).digest()
     ).rstrip(b"=").decode()
@@ -508,7 +501,6 @@ def request_builder_page():
 @app.route("/api/token/refresh", methods=["POST"])
 def refresh_token():
     """Manually refresh OAuth token."""
-    api_id = session.get("api_id", "")
     credentials = session.get("credentials", {})
     auth_schemes = session.get("auth_schemes", {})
 
