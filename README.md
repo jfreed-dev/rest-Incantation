@@ -114,6 +114,8 @@ token = get_token()
 └── bearer_tokens.py       # Legacy token helper
 ```
 
+For detailed architecture diagrams including network topology, data flows, and component interactions, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ### Setup Pre-commit Hooks
 ```bash
 pip install pre-commit
