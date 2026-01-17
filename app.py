@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import json
+import logging
 import os
 from urllib.parse import urlencode
 
@@ -19,10 +20,16 @@ from auth import (
 )
 from auth.storage import FileStorage, SessionStorage
 from credential_method import find_authentication_method, get_detailed_auth_methods
+from importers import PostmanCollectionImporter
+from request_executor import RequestExecutor, find_request_in_collection
 
 SECRETS_FILE = os.environ.get("REST_INCANTATION_SECRETS", "config/secrets.yaml")
 
 app = Flask(__name__)
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def load_secrets(file_path: str = SECRETS_FILE) -> dict:
@@ -527,5 +534,332 @@ def refresh_token():
     return {"success": False, "error": "No refresh token available"}, 400
 
 
+@app.route("/collections")
+def collections_page():
+    """Display all imported collections."""
+    imported_collections = session.get("imported_collections", [])
+    return render_template("collections.html", imported_collections=imported_collections)
+
+
+@app.route("/import/postman")
+def postman_import_page():
+    """Display the Postman collection import page."""
+    return render_template("postman_import.html")
+
+
+@app.route("/import/postman/upload", methods=["POST"])
+def postman_upload():
+    """Upload and preview a Postman collection.
+
+    Expects:
+        - collection file via form data (file upload)
+        - OR collection JSON via request body
+
+    Returns:
+        JSON with collection summary for preview
+
+    Note:
+        - Validates file size before processing
+        - Does NOT store credentials in session for security
+    """
+    try:
+        # Validate file size limit (10MB)
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        
+        importer = PostmanCollectionImporter()
+
+        # Check if file upload
+        if "collection_file" in request.files:
+            file = request.files["collection_file"]
+            if file.filename == "":
+                return {"error": "No file selected"}, 400
+
+            # Check file size before reading
+            file.seek(0, 2)  # Seek to end
+            file_size = file.tell()
+            file.seek(0)  # Reset to start
+            
+            if file_size > MAX_FILE_SIZE:
+                return {
+                    "error": f"File size ({file_size / 1024 / 1024:.1f}MB) exceeds maximum (10MB)"
+                }, 413
+
+            collection_data = file.read().decode("utf-8")
+            imported = importer.load_collection(collection_data)
+
+        # Check if JSON in request body
+        elif request.is_json:
+            collection_data = request.get_json()
+            imported = importer.load_collection(collection_data)
+
+        else:
+            return {"error": "No collection data provided"}, 400
+
+        # Store in session for confirmation - but NOT credentials
+        # Credentials/tokens are only stored when explicitly confirmed
+        session["pending_import"] = {
+            "collection": imported.name,
+            "requests": [
+                {
+                    "name": req.name,
+                    "method": req.method,
+                    "url": req.url,
+                    "folder": "/".join(req.folder_path) if req.folder_path else "",
+                    "auth_type": req.auth.type if req.auth else None,
+                    # Note: auth parameters are NOT stored in session
+                }
+                for req in imported.requests
+            ],
+            "variables": [{"key": var.key, "value": var.value} for var in imported.variables],
+            "folders": imported.folders,
+        }
+
+        summary = importer.get_import_summary(imported)
+        logger.info("Collection preview generated: %s with %d requests", 
+                   imported.name, len(imported.requests))
+        
+        return {"success": True, "summary": summary, "preview": session["pending_import"]}
+
+    except ValueError as e:
+        logger.warning("Invalid collection uploaded: %s", str(e))
+        return {"error": str(e)}, 400
+    except Exception as e:
+        logger.exception("Error uploading Postman collection")
+        return {"error": "Failed to process collection"}, 500
+
+
+@app.route("/import/postman/confirm", methods=["POST"])
+def postman_confirm_import():
+    """Confirm and execute the Postman collection import.
+
+    Expects:
+        JSON body with import options:
+        - import_requests: bool
+        - import_variables: bool
+        - import_auth: bool
+
+    Returns:
+        JSON with import results
+
+    Note:
+        - Sensitive data is NOT included in results for security
+        - Session is cleared after confirmation
+    """
+    if "pending_import" not in session:
+        return {"error": "No pending import found"}, 400
+
+    try:
+        data = request.get_json() or {}
+        import_requests = data.get("import_requests", True)
+        import_variables = data.get("import_variables", True)
+        import_auth = data.get("import_auth", True)
+
+        pending = session["pending_import"]
+        results = {
+            "imported_requests": 0,
+            "imported_variables": 0,
+            "imported_folders": 0,
+            "configured_auth": 0,
+        }
+
+        # Store imported data in session
+        if "imported_collections" not in session:
+            session["imported_collections"] = []
+
+        collection_data = {
+            "name": pending["collection"],
+            "requests": [] if not import_requests else pending["requests"],
+            "variables": [] if not import_variables else pending["variables"],
+            "folders": pending["folders"],
+        }
+
+        if import_requests:
+            results["imported_requests"] = len(pending["requests"])
+
+        if import_variables:
+            # Note: variables already in session from environment import
+            # Only count user-confirmed variables
+            results["imported_variables"] = len(pending["variables"])
+
+        if import_auth:
+            # Count unique auth configurations (from requests)
+            auth_types = set()
+            for req in pending["requests"]:
+                if req.get("auth_type"):
+                    auth_types.add(req["auth_type"])
+            results["configured_auth"] = len(auth_types)
+
+        results["imported_folders"] = len(pending["folders"])
+
+        session["imported_collections"].append(collection_data)
+        session.pop("pending_import", None)  # Clean up pending import
+        session.modified = True
+
+        logger.info("Collection imported successfully: %s (%d requests, %d variables)",
+                   pending["collection"],
+                   results["imported_requests"],
+                   results["imported_variables"])
+        
+        return {"success": True, "results": results}
+
+    except Exception as e:
+        logger.exception("Error confirming Postman import")
+        return {"error": "Failed to complete import"}, 500
+
+
+@app.route("/import/postman/environment", methods=["POST"])
+def postman_import_environment():
+    """Import a Postman environment file.
+
+    Expects:
+        - environment file via form data (file upload)
+        - OR environment JSON via request body
+
+    Returns:
+        JSON with imported variables (excluding sensitive values for security)
+
+    Note:
+        - Environment variables are cached in session only if explicitly confirmed
+        - Sensitive keys are NOT logged
+    """
+    try:
+        # Validate file size limit (10MB)
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        
+        importer = PostmanCollectionImporter()
+
+        # Check if file upload
+        if "environment_file" in request.files:
+            file = request.files["environment_file"]
+            if file.filename == "":
+                return {"error": "No file selected"}, 400
+
+            # Check file size before reading
+            file.seek(0, 2)
+            file_size = file.tell()
+            file.seek(0)
+            
+            if file_size > MAX_FILE_SIZE:
+                return {
+                    "error": f"File size ({file_size / 1024 / 1024:.1f}MB) exceeds maximum (10MB)"
+                }, 413
+
+            env_data = file.read().decode("utf-8")
+            variables = importer.load_environment(env_data)
+
+        # Check if JSON in request body
+        elif request.is_json:
+            env_data = request.get_json()
+            variables = importer.load_environment(env_data)
+
+        else:
+            return {"error": "No environment data provided"}, 400
+
+        # Store in session only - credentials are NOT logged or displayed
+        if "postman_variables" not in session:
+            session["postman_variables"] = {}
+
+        imported_count = 0
+        for var in variables:
+            if var.enabled:
+                session["postman_variables"][var.key] = var.value
+                imported_count += 1
+
+        # Return response without sensitive values
+        return {
+            "success": True,
+            "imported_count": imported_count,
+            "variables": [
+                {"key": v.key, "value": "[REDACTED]" if v.key.lower() in {"token", "password", "secret", "key"} else v.value, "enabled": v.enabled}
+                for v in variables
+            ],
+        }
+
+    except ValueError as e:
+        logger.warning("Invalid environment file: %s", str(e))
+        return {"error": str(e)}, 400
+    except Exception as e:
+        logger.exception("Error importing Postman environment")
+        return {"error": "Failed to import environment"}, 500
+
+
+@app.route("/api/execute-request", methods=["POST"])
+def execute_request():
+    """Execute a request from an imported collection.
+    
+    Expects JSON:
+        {
+            "collection_name": str,
+            "request_name": str
+        }
+        
+    Returns:
+        JSON with execution results
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return {"error": "No JSON data provided"}, 400
+            
+        collection_name = data.get("collection_name")
+        request_name = data.get("request_name")
+        
+        if not collection_name or not request_name:
+            return {"error": "collection_name and request_name are required"}, 400
+        
+        # Find collection in session
+        imported_collections = session.get("imported_collections", [])
+        collection = None
+        for coll in imported_collections:
+            if coll.get("name") == collection_name:
+                collection = coll
+                break
+        
+        if not collection:
+            return {"error": f"Collection '{collection_name}' not found"}, 404
+        
+        # Find request in collection
+        req = find_request_in_collection(collection, request_name)
+        if not req:
+            return {"error": f"Request '{request_name}' not found in collection"}, 404
+        
+        # Extract request details
+        method = req.get("method", "GET")
+        url = req.get("url", "")
+        auth_type = req.get("auth_type")
+        
+        # Get variables from collection
+        variables = collection.get("variables", [])
+        
+        # Create executor with variables
+        executor = RequestExecutor(variables)
+        
+        # Execute request
+        # Note: For now, we'll use basic auth params from URL/headers
+        # Full auth parsing from Postman format will be added later
+        result = executor.execute(
+            method=method,
+            url=url,
+            headers=None,  # TODO: Parse headers from request
+            body=None,  # TODO: Parse body from request
+            auth_type=auth_type,
+            auth_params={"token": "{{api_token}}"} if auth_type == "bearer" else None,
+        )
+        
+        logger.info(
+            "Request executed: %s %s -> %s",
+            method,
+            request_name,
+            result.get("status_code") if result.get("success") else result.get("error"),
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.exception("Error executing request")
+        return {"error": f"Execution failed: {str(e)}"}, 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)  # nosec B201 - debug mode only for local development
+

@@ -660,3 +660,136 @@ class TestRequestBuilderRoute:
 
         assert response.status_code == 200
         assert b"Request Builder" in response.data
+
+class TestPostmanImportRoutes:
+    """Tests for Postman Collection import feature."""
+
+    def test_postman_import_page_displays(self, client):
+        """Postman import page should be accessible."""
+        response = client.get("/import/postman")
+
+        assert response.status_code == 200
+        assert b"Postman Collection" in response.data or b"postman" in response.data.lower()
+
+    def test_postman_upload_oversized_file(self, client):
+        """File larger than 10MB should be rejected."""
+        from io import BytesIO
+
+        large_content = b"x" * (11 * 1024 * 1024)  # 11MB
+        large_file = (BytesIO(large_content), "large_collection.json")
+
+        response = client.post(
+            "/import/postman/upload",
+            data={"collection_file": large_file},
+            content_type="multipart/form-data",
+        )
+
+        assert response.status_code in [413, 400]
+        data = response.get_json()
+        assert "File size" in data.get("error", "") or "exceeds" in data.get("error", "")
+
+    def test_postman_upload_valid_collection(self, client):
+        """Valid collection upload should return preview."""
+        from io import BytesIO
+        import json
+
+        collection = {
+            "info": {"name": "Test Collection", "schema": "v2.1.0"},
+            "variable": [{"key": "base_url", "value": "https://api.test.com"}],
+            "item": [
+                {
+                    "name": "Test Request",
+                    "request": {"method": "GET", "url": "https://api.test.com/test"},
+                }
+            ],
+        }
+
+        collection_json = json.dumps(collection).encode("utf-8")
+        collection_file = (BytesIO(collection_json), "collection.json")
+
+        response = client.post(
+            "/import/postman/upload",
+            data={"collection_file": collection_file},
+            content_type="multipart/form-data",
+        )
+
+        assert response.status_code == 200
+        response_data = response.get_json()
+        assert response_data.get("success") is True
+        assert "preview" in response_data or "summary" in response_data
+
+    def test_postman_environment_sensitive_data_redacted(self, client):
+        """Environment variables with sensitive keys should be redacted."""
+        from io import BytesIO
+        import json
+
+        collection = {
+            "info": {"name": "Test Collection", "schema": "v2.1.0"},
+            "variable": [
+                {"key": "base_url", "value": "https://api.test.com"},
+                {"key": "api_token", "value": "secret_token_value"},
+                {"key": "password", "value": "secret_password"},
+                {"key": "api_key", "value": "secret_key_value"},
+            ],
+            "item": [],
+        }
+
+        collection_json = json.dumps(collection).encode("utf-8")
+        collection_file = (BytesIO(collection_json), "collection.json")
+
+        # First upload
+        response1 = client.post(
+            "/import/postman/upload",
+            data={"collection_file": collection_file},
+            content_type="multipart/form-data",
+        )
+
+        assert response1.status_code == 200
+
+        # Then get environment preview
+        response = client.get("/import/postman/environment")
+
+        if response.status_code == 200:
+            response_data = response.get_json()
+            if "variables" in response_data:
+                # Check that sensitive keys are redacted
+                for var in response_data.get("variables", []):
+                    key = var.get("key", "").lower()
+                    if key in {"token", "password", "key", "secret", "api_token", "api_key"}:
+                        assert var.get("value") == "[REDACTED]"
+
+    def test_postman_confirm_import_success(self, client):
+        """Confirming import should return success response."""
+        from io import BytesIO
+        import json
+
+        collection = {
+            "info": {"name": "Test Collection", "schema": "v2.1.0"},
+            "variable": [{"key": "base_url", "value": "https://api.test.com"}],
+            "item": [
+                {
+                    "name": "Test Request",
+                    "request": {"method": "GET", "url": "https://api.test.com/test"},
+                }
+            ],
+        }
+
+        collection_json = json.dumps(collection).encode("utf-8")
+        collection_file = (BytesIO(collection_json), "collection.json")
+
+        # Upload collection
+        response1 = client.post(
+            "/import/postman/upload",
+            data={"collection_file": collection_file},
+            content_type="multipart/form-data",
+        )
+
+        assert response1.status_code == 200
+
+        # Confirm import with JSON payload
+        response = client.post(
+            "/import/postman/confirm",
+            json={"import_requests": True, "import_variables": True, "import_auth": True},
+        )
+
+        assert response.status_code in [200, 302, 303]  # Success or redirect

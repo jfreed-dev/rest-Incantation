@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}My Collections - REST Incantation{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">My Collections</h1>
+                <p class="text-gray-600">Manage and execute your imported Postman collections</p>
+            </div>
+            <a href="{{ url_for('postman_import_page') }}" 
+               class="inline-flex items-center px-4 py-2 border border-primary-600 rounded-lg shadow-sm text-sm font-medium text-primary-600 bg-white hover:bg-primary-50 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Import New Collection
+            </a>
+        </div>
+    </div>
+
+    {% if imported_collections and imported_collections|length > 0 %}
+        <!-- Collections List -->
+        {% for collection in imported_collections %}
+        <div class="bg-white rounded-lg shadow-sm border-2 border-gray-200 p-6 mb-6 hover:border-primary-600 transition-colors">
+            <!-- Collection Header -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ collection.name }}</h2>
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            {{ collection.requests|length }} request{{ 's' if collection.requests|length != 1 else '' }}
+                        </span>
+                        {% if collection.variables %}
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            {{ collection.variables|length }} variable{{ 's' if collection.variables|length != 1 else '' }}
+                        </span>
+                        {% endif %}
+                        {% if collection.folders %}
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                            </svg>
+                            {{ collection.folders|length }} folder{{ 's' if collection.folders|length != 1 else '' }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <button onclick="toggleCollection('collection-{{ loop.index }}')" 
+                        title="Toggle collection details"
+                        aria-label="Toggle {{ collection.name }} collection"
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg id="icon-collection-{{ loop.index }}" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Collection Content (Collapsible) -->
+            <div id="collection-{{ loop.index }}" class="border-t border-gray-200 pt-4" style="display: none;">
+                
+                <!-- Variables Section -->
+                {% if collection.variables %}
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        Environment Variables
+                    </h3>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            {% for var in collection.variables[:6] %}
+                            <div class="flex items-start">
+                                <span class="inline-block bg-primary-100 text-primary-700 px-2 py-1 rounded text-xs font-mono mr-2">{{ var.key }}</span>
+                                <span class="text-sm text-gray-600 truncate flex-1">{{ var.value if var.value|length < 40 else var.value[:40] + '...' }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if collection.variables|length > 6 %}
+                        <p class="mt-3 text-sm text-gray-500 text-center">+ {{ collection.variables|length - 6 }} more variable{{ 's' if (collection.variables|length - 6) != 1 else '' }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Requests Section -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Requests
+                    </h3>
+                    <div class="space-y-2">
+                        {% for request in collection.requests %}
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:border-primary-600 hover:shadow-md transition-all cursor-pointer group">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <!-- HTTP Method Badge -->
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold
+                                            {% if request.method == 'GET' %}bg-green-100 text-green-800
+                                            {% elif request.method == 'POST' %}bg-blue-100 text-blue-800
+                                            {% elif request.method == 'PUT' %}bg-yellow-100 text-yellow-800
+                                            {% elif request.method == 'PATCH' %}bg-orange-100 text-orange-800
+                                            {% elif request.method == 'DELETE' %}bg-red-100 text-red-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ request.method }}
+                                        </span>
+                                        
+                                        <!-- Request Name -->
+                                        <span class="font-medium text-gray-900">{{ request.name }}</span>
+                                        
+                                        <!-- Folder Path -->
+                                        {% if request.folder %}
+                                        <span class="text-xs text-gray-500">
+                                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                            </svg>
+                                            {{ request.folder }}
+                                        </span>
+                                        {% endif %}
+                                        
+                                        <!-- Auth Badge -->
+                                        {% if request.auth_type %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-800">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                            {{ request.auth_type }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Request URL -->
+                                    <p class="mt-2 text-sm text-gray-600 font-mono bg-gray-50 px-3 py-1 rounded inline-block">{{ request.url }}</p>
+                                </div>
+                                
+                                <!-- Execute Button -->
+                                <button onclick="executeRequest('{{ collection.name }}', '{{ request.name }}')" 
+                                        class="ml-4 px-4 py-2 bg-primary-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                    </svg>
+                                    Execute
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-gray-300 p-12 text-center">
+            <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No Collections Yet</h3>
+            <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                Get started by importing your first Postman collection. Upload your collection and environment files to begin making API requests.
+            </p>
+            <a href="{{ url_for('postman_import_page') }}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                Import Your First Collection
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="mt-8 bg-gradient-to-r from-primary-50 to-purple-50 rounded-lg border border-primary-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{{ url_for('index') }}" class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition-shadow">
+                <svg class="w-6 h-6 text-primary-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <div>
+                    <p class="font-medium text-gray-900">Discover API</p>
+                    <p class="text-xs text-gray-500">From OpenAPI spec</p>
+                </div>
+            </a>
+            <a href="{{ url_for('postman_import_page') }}" class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition-shadow">
+                <svg class="w-6 h-6 text-primary-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <div>
+                    <p class="font-medium text-gray-900">Import Collection</p>
+                    <p class="text-xs text-gray-500">From Postman</p>
+                </div>
+            </a>
+            <a href="#" class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition-shadow opacity-50 cursor-not-allowed">
+                <svg class="w-6 h-6 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                </svg>
+                <div>
+                    <p class="font-medium text-gray-400">Export Collection</p>
+                    <p class="text-xs text-gray-400">Coming soon</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Response Modal -->
+<div id="responseModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" onclick="closeResponseModal(event)">
+    <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <h3 class="text-xl font-bold text-white" id="modalRequestName">Request Response</h3>
+            </div>
+            <button onclick="closeResponseModal()" 
+                    title="Close response modal"
+                    aria-label="Close modal"
+                    class="text-white hover:text-gray-200 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="overflow-y-auto" style="max-height: calc(90vh - 160px);">
+            <div class="p-6">
+                <!-- Loading State -->
+                <div id="responseLoading" class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600"></div>
+                    <p class="mt-4 text-gray-600">Executing request...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="responseError" class="hidden bg-red-50 border-2 border-red-200 rounded-lg p-6">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-lg font-semibold text-red-900 mb-2">Request Failed</h4>
+                            <p class="text-red-700" id="errorMessage"></p>
+                            <p class="text-sm text-red-600 mt-2" id="errorType"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success State -->
+                <div id="responseSuccess" class="hidden">
+                    <!-- Status Bar -->
+                    <div class="flex items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div>
+                                <span class="text-sm text-gray-500">Status</span>
+                                <div class="flex items-center space-x-2">
+                                    <span id="statusCode" class="text-2xl font-bold"></span>
+                                    <span id="statusText" class="text-gray-600"></span>
+                                </div>
+                            </div>
+                            <div class="h-12 w-px bg-gray-300"></div>
+                            <div>
+                                <span class="text-sm text-gray-500">Time</span>
+                                <div class="text-lg font-semibold" id="responseTime"></div>
+                            </div>
+                            <div class="h-12 w-px bg-gray-300"></div>
+                            <div>
+                                <span class="text-sm text-gray-500">Size</span>
+                                <div class="text-lg font-semibold" id="responseSize"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- URL -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Request URL</label>
+                        <div class="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-900 break-all" id="resolvedUrl"></div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="border-b border-gray-200 mb-4">
+                        <nav class="flex space-x-4">
+                            <button onclick="switchTab('body')" id="tab-body" class="tab-button active pb-2 px-1 border-b-2 border-primary-600 font-medium text-primary-600">
+                                Body
+                            </button>
+                            <button onclick="switchTab('headers')" id="tab-headers" class="tab-button pb-2 px-1 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                                Headers
+                                <span class="ml-2 bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs" id="headerCount">0</span>
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content: Body -->
+                    <div id="content-body" class="tab-content">
+                        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                            <pre class="text-green-400 text-sm font-mono" id="responseBody"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content: Headers -->
+                    <div id="content-headers" class="tab-content hidden">
+                        <div class="space-y-2" id="responseHeaders"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3 border-t border-gray-200">
+            <button onclick="copyResponse()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                Copy Response
+            </button>
+            <button onclick="closeResponseModal()" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/collections.js') }}"></script>
+
+<style>
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+</style>
+{% endblock %}
+

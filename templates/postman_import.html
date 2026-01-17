@@ -1,0 +1,785 @@
+{% extends "base.html" %}
+
+{% block title %}Import Postman Collection{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-600: #4f46e5;
+        --primary-700: #4338ca;
+        --primary-50: #eef2ff;
+        --primary-100: #e0e7ff;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-500: #6b7280;
+        --gray-900: #111827;
+    }
+
+    .import-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+    }
+
+    .page-header {
+        margin-bottom: 4rem;
+    }
+
+    .page-badge {
+        display: inline-block;
+        background: var(--primary-50);
+        color: var(--primary-600);
+        padding: 0.5rem 1.25rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+        font-size: 1.25rem;
+        color: var(--gray-500);
+        line-height: 1.8;
+        max-width: 600px;
+    }
+
+    .step-card {
+        background: white;
+        border: 2px solid var(--gray-200);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .step-card:hover {
+        border-color: var(--primary-100);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+    }
+
+    .step-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+
+    .step-number {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary-600), #6366f1);
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-right: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+        color: var(--gray-500);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .step-badge {
+        background: var(--primary-50);
+        color: var(--primary-600);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .upload-zone {
+        border: 3px dashed var(--gray-300);
+        border-radius: 1rem;
+        padding: 4rem 2rem;
+        text-align: center;
+        background: linear-gradient(to bottom, white, var(--gray-50));
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .upload-zone:hover {
+        border-color: var(--primary-600);
+        background: var(--primary-50);
+        transform: translateY(-2px);
+    }
+
+    .upload-zone.dragover {
+        border-color: var(--primary-600);
+        border-style: solid;
+        background: var(--primary-100);
+        transform: scale(1.01);
+    }
+
+    .upload-icon {
+        width: 96px;
+        height: 96px;
+        background: transparent;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem auto;
+        box-shadow: none;
+    }
+
+    .upload-icon i {
+        font-size: 2.5rem;
+        color: var(--primary-600);
+    }
+
+    .upload-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+    }
+
+    .upload-text {
+        color: var(--gray-500);
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-select-file {
+        background: white;
+        border: 2px solid var(--gray-300);
+        color: var(--gray-900);
+        padding: 0.875rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-select-file:hover {
+        border-color: var(--primary-600);
+        color: var(--primary-600);
+        background: var(--primary-50);
+    }
+
+    .file-preview {
+        background: var(--gray-50);
+        border: 2px solid var(--gray-200);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .file-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--primary-100);
+        color: var(--primary-600);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .file-size {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+    }
+
+    .btn-primary-lg {
+        background: linear-gradient(135deg, var(--primary-600), #6366f1);
+        color: white;
+        border: none;
+        padding: 1.125rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 1.05rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+        width: 100%;
+    }
+
+    .btn-primary-lg:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(79, 70, 229, 0.4);
+        background: linear-gradient(135deg, var(--primary-700), var(--primary-600));
+        color: white;
+    }
+
+    .btn-primary-lg:active {
+        transform: translateY(0);
+    }
+
+    .env-input-group {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .env-input {
+        flex: 1;
+        padding: 1rem 1.25rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .env-input:focus {
+        outline: none;
+        border-color: var(--primary-600);
+        box-shadow: 0 0 0 4px var(--primary-50);
+    }
+
+    .btn-upload {
+        padding: 1rem 2rem;
+        background: var(--primary-600);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-upload:hover {
+        background: var(--primary-700);
+        color: white;
+    }
+
+    .success-message {
+        background: #f0fdf4;
+        border: 2px solid #86efac;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        color: #166534;
+        font-weight: 600;
+    }
+
+    .preview-card {
+        background: white;
+        border: 3px solid var(--primary-600);
+        border-radius: 1rem;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 60px rgba(79, 70, 229, 0.15);
+    }
+
+    .preview-header {
+        background: linear-gradient(135deg, var(--primary-600), #6366f1);
+        color: white;
+        padding: 2rem;
+    }
+
+    .preview-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        padding: 2rem;
+        background: var(--gray-50);
+    }
+
+    .stat-box {
+        background: white;
+        border: 2px solid var(--gray-200);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .stat-box:hover {
+        border-color: var(--primary-600);
+        transform: translateY(-2px);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-600);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .import-options {
+        padding: 2rem;
+    }
+
+    .options-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 1.5rem;
+    }
+
+    .option-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .sidebar {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .guide-card {
+        background: white;
+        border: 2px solid var(--gray-200);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .guide-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-step {
+        display: flex;
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    .timeline-step:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-step::before {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 3rem;
+        bottom: -2rem;
+        width: 2px;
+        background: var(--gray-200);
+    }
+
+    .timeline-step:last-child::before {
+        display: none;
+    }
+
+    .timeline-number {
+        width: 36px;
+        height: 36px;
+        background: white;
+        border: 3px solid var(--primary-600);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--primary-600);
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .timeline-content h6 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-content p {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .tip-card {
+        background: linear-gradient(135deg, var(--primary-600), #6366f1);
+        color: white;
+        border-radius: 1rem;
+        padding: 1.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .tip-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .tip-title {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .tip-text {
+        font-size: 0.875rem;
+        opacity: 0.95;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .features-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .feature-badge {
+        background: white;
+        border: 2px solid var(--gray-200);
+        color: var(--gray-900);
+        padding: 0.625rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    @media (max-width: 991px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="import-container">
+    <div class="page-header">
+        <div class="page-badge">Postman Import</div>
+        <h1 class="page-title">Import Collection</h1>
+        <p class="page-subtitle">Transform your Postman collections into REST Incantation endpoints instantly and securely.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Step 1: Upload Collection -->
+            <div class="step-card" id="step1Card">
+                <div class="step-header">
+                    <div class="d-flex align-items-start">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h2 class="step-title">Upload Collection</h2>
+                            <p class="step-desc">Select your Postman Collection v2.1 JSON file to get started.</p>
+                        </div>
+                    </div>
+                    <div class="step-badge">JSON v2.1</div>
+                </div>
+
+                <form id="collectionUploadForm">
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">
+                            <img src="{{ url_for('static', filename='img/postman.png') }}" alt="Postman Logo" style="max-width: 96px; max-height: 96px; object-fit: contain;">
+                        </div>
+                        <h3 class="upload-title">Drop your collection file here</h3>
+                        <p class="upload-text">or click the button below to browse</p>
+                        
+                        <input type="file" 
+                               id="collectionFile" 
+                               name="collectionFile"
+                               accept=".json,application/json" 
+                               title="Select Postman Collection JSON file (v2.1)"
+                               aria-label="Postman Collection File Upload"
+                               style="position: absolute; width: 0; height: 0; opacity: 0; overflow: hidden; z-index: -1;"
+                               required>
+                        
+                        <button type="button" 
+                                class="btn-select-file" 
+                                onclick="document.getElementById('collectionFile').click()"
+                                title="Browse for collection file"
+                                aria-label="Choose File to Upload">
+                            Select File
+                        </button>
+                        
+                        <p class="mt-3 mb-0 text-muted small">Supports Postman Export Format v2.1 (max 10MB)</p>
+                    </div>
+
+                    <div id="fileInfo" style="display: none;">
+                        <div class="file-preview">
+                            <div class="file-icon">
+                                <i class="bi bi-file-earmark-code-fill" aria-hidden="true"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="file-name" id="fileName">collection.json</div>
+                                <div class="file-size" id="fileSize">2.4 MB</div>
+                            </div>
+                            <button type="button" 
+                                    class="btn btn-link text-danger" 
+                                    onclick="resetUpload()"
+                                    title="Remove selected file"
+                                    aria-label="Remove File">
+                                <i class="bi bi-x-lg" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button type="submit" 
+                                class="btn-primary-lg mt-3" 
+                                id="uploadBtn"
+                                title="Process and analyze the collection file"
+                                aria-label="Process Collection File">
+                            Process Collection
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 2: Environment Variables -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="d-flex align-items-start">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h2 class="step-title">Environment Variables</h2>
+                            <p class="step-desc">Import your environment file to automatically resolve {{ variables }} in your requests.</p>
+                        </div>
+                    </div>
+                    <div class="step-badge" style="background: var(--gray-100); color: var(--gray-500);">Optional</div>
+                </div>
+                
+                <form id="environmentUploadForm">
+                    <input type="file" 
+                           id="environmentFile" 
+                           name="environmentFile"
+                           accept=".json,application/json"
+                           title="Select Postman Environment JSON file (optional)"
+                           aria-label="Environment Variables File Upload (Optional)"
+                           style="position: absolute; width: 0; height: 0; opacity: 0; overflow: hidden; z-index: -1;">
+                    
+                    <div class="env-input-group">
+                        <div class="env-input" 
+                             style="cursor: pointer; padding: 0.75rem 1rem; background: white; border: 2px solid var(--gray-300); border-radius: 0.75rem; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;"
+                             onclick="document.getElementById('environmentFile').click()"
+                             onmouseover="this.style.borderColor='var(--primary-600)'"
+                             onmouseout="this.style.borderColor='var(--gray-300)'">
+                            <span class="text-muted" id="envFileName">No file chosen</span>
+                            <span style="color: var(--primary-600); font-weight: 600; font-size: 0.875rem;">Browse</span>
+                        </div>
+                        <button type="submit" 
+                                class="btn-upload" 
+                                id="uploadEnvBtn"
+                                title="Upload environment file"
+                                aria-label="Upload Environment File">
+                            <i class="bi bi-upload me-2" aria-hidden="true"></i>Upload
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="envSuccess" class="success-message" style="display: none;">
+                    <i class="bi bi-check-circle-fill fs-5" aria-hidden="true"></i>
+                    <span><span id="envCount">0</span> variables loaded successfully</span>
+                </div>
+            </div>
+
+            <!-- Step 3: Preview & Confirm -->
+            <div id="previewCard" class="preview-card" style="display: none;">
+                <div class="preview-header">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-rocket-takeoff-fill fs-2" aria-hidden="true"></i>
+                        <div>
+                            <div class="preview-title" id="collectionName">Collection Name</div>
+                            <p class="mb-0 opacity-90" id="collectionDescription">Description...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="requestCount">0</div>
+                        <div class="stat-label">Requests</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="folderCount">0</div>
+                        <div class="stat-label">Folders</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="variableCount">0</div>
+                        <div class="stat-label">Variables</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="authTypeCount">0</div>
+                        <div class="stat-label">Auth Types</div>
+                    </div>
+                </div>
+
+                <div class="import-options">
+                    <div class="options-title">Import Settings</div>
+                    <div class="option-item">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="importRequests" 
+                                   name="importRequests"
+                                   title="Import all HTTP requests from the collection"
+                                   checked>
+                            <label class="form-check-label fw-semibold" for="importRequests">Import Requests</label>
+                        </div>
+                    </div>
+                    <div class="option-item">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="importVariables" 
+                                   name="importVariables"
+                                   title="Import collection and environment variables"
+                                   checked>
+                            <label class="form-check-label fw-semibold" for="importVariables">Import Variables</label>
+                        </div>
+                    </div>
+                    <div class="option-item">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="importAuth" 
+                                   name="importAuth"
+                                   title="Import authentication configurations"
+                                   checked>
+                            <label class="form-check-label fw-semibold" for="importAuth">Import Authentication</label>
+                        </div>
+                    </div>
+
+                    <button type="button" 
+                            class="btn-primary-lg mt-4" 
+                            id="confirmImportBtn"
+                            title="Confirm and import the collection into REST Incantation"
+                            aria-label="Confirm and Import Collection">
+                        Confirm and Import Collection
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success Alert -->
+            <div id="successAlert" class="step-card text-center" style="display: none; background: #f0fdf4; border-color: #86efac;">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: white; border-radius: 50%; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);">
+                        <img src="{{ url_for('static', filename='img/postman.png') }}" alt="Postman Logo" style="max-width: 60px; max-height: 60px; object-fit: contain;">
+                    </div>
+                </div>
+                <h2 class="h3 fw-bold mb-2">Import Successful!</h2>
+                <p class="text-muted mb-4">Your collection is now ready to use in REST Incantation.</p>
+                <a href="{{ url_for('collections_page') }}" 
+                   class="btn btn-success btn-lg px-5"
+                   title="View your imported collections"
+                   aria-label="View My Collections"
+                   style="border-radius: 0.75rem;">
+                    <i class="bi bi-collection-fill me-2" aria-hidden="true"></i>
+                    View My Collections
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sidebar">
+                <!-- How it Works Guide -->
+                <div class="guide-card">
+                    <div class="guide-title">How it Works</div>
+                    
+                    <div class="timeline-step">
+                        <div class="timeline-number">1</div>
+                        <div class="timeline-content">
+                            <h6>Export Data</h6>
+                            <p>In Postman, right-click your collection and select <strong>Export</strong>. Choose the <strong>Collection v2.1</strong> format.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="timeline-number">2</div>
+                        <div class="timeline-content">
+                            <h6>Upload Environment</h6>
+                            <p>If your requests use variables (e.g. <code>{{ base_url }}</code>), export your environment JSON separately.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="timeline-number">3</div>
+                        <div class="timeline-content">
+                            <h6>Review and Import</h6>
+                            <p>We'll parse the file and show you a summary. Verify the endpoints before confirming.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Tip -->
+                <div class="tip-card">
+                    <div class="tip-header">
+                        <i class="bi bi-lightbulb-fill fs-5" aria-hidden="true"></i>
+                        <div class="tip-title">Pro Tip</div>
+                    </div>
+                    <p class="tip-text">Sensitive data like API Keys in the Authorization header are encrypted automatically upon import.</p>
+                </div>
+
+                <!-- Supported Features -->
+                <div class="guide-card">
+                    <div class="guide-title">Supported Features</div>
+                    <div class="features-list">
+                        <div class="feature-badge">Headers</div>
+                        <div class="feature-badge">Body (JSON)</div>
+                        <div class="feature-badge">Auth: Bearer</div>
+                        <div class="feature-badge">Auth: Basic</div>
+                        <div class="feature-badge">Query Params</div>
+                        <div class="feature-badge">Variables</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/postman_import.js') }}"></script>
+{% endblock %}
+
