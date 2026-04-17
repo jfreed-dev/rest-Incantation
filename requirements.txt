@@ -3,5 +3,5 @@ requests==2.33.1
 APScheduler==3.11.2
 PyYAML==6.0.3
 pytest==9.0.3
-authlib==1.6.10
+authlib==1.6.11
 cryptography==46.0.7
