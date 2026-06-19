@@ -3,6 +3,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      target: runtime
     ports:
       - "5000:5000"
     environment:
@@ -19,6 +20,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      target: test
     command: pytest -v --cov=. --cov-report=term
     environment:
       - FLASK_SECRET_KEY=test-key
