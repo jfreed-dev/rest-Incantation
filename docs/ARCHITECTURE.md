@@ -342,10 +342,20 @@ rest-Incantation/
 │   └── header_builder.py    # HTTP header construction
 │
 ├── templates/               # Jinja2 HTML templates
+│   ├── base.html
 │   ├── index.html
 │   ├── submit_url.html
 │   ├── credentials.html
-│   └── request_builder.html
+│   ├── request_builder.html
+│   ├── components/          # Auth form components
+│   │   ├── auth_form_apikey.html
+│   │   ├── auth_form_basic.html
+│   │   ├── auth_form_bearer.html
+│   │   ├── auth_form_jwt.html
+│   │   ├── auth_form_oauth2.html
+│   │   └── custom_headers.html
+│   └── partials/
+│       └── flash_messages.html
 │
 ├── config/
 │   ├── secrets.yaml         # Runtime secrets (gitignored)
