@@ -64,7 +64,7 @@ docker compose up --build
 |------|---------|---------|
 | **ruff** | Linting and formatting | `pip install ruff` |
 | **mypy** | Type checking | `pip install mypy` |
-| **pytest** | Testing | `pip install pytest pytest-cov` |
+| **pytest** | Testing | included in `requirements-dev.txt` |
 | **bandit** | Security scanning | `pip install bandit` |
 | **pre-commit** | Git hooks | `pip install pre-commit` |
 
