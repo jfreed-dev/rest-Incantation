@@ -199,10 +199,11 @@ The config directory is mounted read-only into the container.
 
 ## CI Checks
 All checks run automatically on push and pull requests:
-- **pytest** - tests with coverage reporting
 - **ruff** - linting and formatting
 - **mypy** - type checking
-- **bandit** - security scanning
+- **bandit** + **pip-audit** - security scanning and dependency vulnerability audit
+- **pytest** - tests with coverage reporting (uploaded to Codecov)
+- **Docker** - builds the image and runs the test suite in a container
 
 ## Troubleshooting
 - OpenAPI fetch fails: confirm the base URL is reachable and that `/openapi.json` or `/openapi.yaml` exists.
