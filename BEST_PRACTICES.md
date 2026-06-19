@@ -13,7 +13,7 @@
 - Follow PEP 8 and keep modules single‑purpose.
 - Avoid import‑time side effects; expose functions and wire them in `app.py`.
 - Keep Flask routes small; move complex logic into helper modules.
-- Keep static analysis config in `qodana.yaml` and prefer CI checks over local overrides.
+- Keep static analysis config in `pyproject.toml` (`ruff`, `mypy`, `bandit`) and prefer CI checks over local overrides.
 
 ## Testing
 - Add tests for parsing, auth detection, and route behavior.
