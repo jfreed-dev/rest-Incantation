@@ -127,7 +127,10 @@ Hooks run automatically on commit:
 - **mypy** - type checking
 
 ## Testing
+Install the development dependencies (runtime deps plus the test toolchain), then run the suite:
 ```bash
+pip install -r requirements-dev.txt
+
 pytest
 
 # With coverage

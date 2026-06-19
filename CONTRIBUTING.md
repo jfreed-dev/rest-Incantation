@@ -34,8 +34,8 @@ cd rest-Incantation
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (runtime + test toolchain)
+pip install -r requirements-dev.txt
 
 # Install pre-commit hooks (recommended)
 pip install pre-commit

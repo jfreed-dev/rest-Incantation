@@ -1,0 +1,5 @@
+# Development/test dependencies.
+# Installs the runtime requirements plus the test toolchain.
+-r requirements.txt
+pytest==9.1.0
+pytest-cov
