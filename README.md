@@ -106,10 +106,14 @@ token = get_token()
 │   ├── storage.py         # Credential storage backends
 │   ├── token_manager.py   # Token renewal scheduler
 │   └── header_builder.py  # HTTP header construction
-├── templates/
-│   ├── base.html          # Base template with Tailwind
-│   ├── components/        # Auth form components
-│   └── partials/          # Reusable UI fragments
+├── templates/                # Jinja2 + Tailwind templates
+│   ├── base.html             # Base layout
+│   ├── index.html            # Landing page
+│   ├── submit_url.html       # OpenAPI URL entry
+│   ├── credentials.html      # Auth credential entry
+│   ├── request_builder.html  # Request builder UI
+│   ├── components/           # Auth form components (apikey, basic, bearer, jwt, oauth2, headers)
+│   └── partials/             # Reusable fragments (flash messages)
 ├── credential_method.py   # OpenAPI auth detection
 └── bearer_tokens.py       # Legacy token helper
 ```
