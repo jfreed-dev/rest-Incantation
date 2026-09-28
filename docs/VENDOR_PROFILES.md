@@ -822,16 +822,16 @@ pagination:
 ```python
 @dataclass
 class VendorProfile:
-    id: str                          # e.g., "cisco_meraki"
-    name: str                        # Display name
-    category: str                    # Network, Security, Cloud, DCIM
-    base_url: str                    # Default base URL (may have placeholders)
-    auth_config: AuthConfig          # Authentication configuration
-    rate_limits: List[RateLimit]     # Rate limiting rules
-    pagination: PaginationConfig     # Pagination handling
+    id: str  # e.g., "cisco_meraki"
+    name: str  # Display name
+    category: str  # Network, Security, Cloud, DCIM
+    base_url: str  # Default base URL (may have placeholders)
+    auth_config: AuthConfig  # Authentication configuration
+    rate_limits: List[RateLimit]  # Rate limiting rules
+    pagination: PaginationConfig  # Pagination handling
     openapi_sources: List[OpenAPISource]  # Where to fetch specs
-    required_headers: List[Header]   # Headers needed for all requests
-    common_endpoints: Dict[str, str] # Predefined useful endpoints
+    required_headers: List[Header]  # Headers needed for all requests
+    common_endpoints: Dict[str, str]  # Predefined useful endpoints
 ```
 
 #### Storage
@@ -973,6 +973,7 @@ dashboard:
 ```python
 # New auth type in auth/aws_sigv4.py
 
+
 class AWSSigV4Auth:
     def __init__(
         self,
@@ -980,7 +981,7 @@ class AWSSigV4Auth:
         secret_key: str,
         region: str,
         service: str,
-        session_token: Optional[str] = None
+        session_token: Optional[str] = None,
     ):
         self.access_key = access_key
         self.secret_key = secret_key
