@@ -240,6 +240,7 @@ Example test structure:
 import pytest
 from unittest.mock import patch, Mock
 
+
 class TestFeatureName:
     """Tests for feature description."""
 
