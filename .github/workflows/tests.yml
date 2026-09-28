@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install ruff
-        run: pip install ruff
+        run: pip install ruff==0.16.9
       - name: Run ruff linter
         run: ruff check .
       - name: Run ruff formatter check
@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install mypy types-requests types-PyYAML
+          pip install mypy==2.3.1 types-requests types-PyYAML
       - name: Run mypy
         run: mypy .
 
@@ -50,7 +50,7 @@ jobs:
           python-version: "3.11"
           cache: "pip"
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt bandit[toml] pip-audit
+        run: pip install -r requirements-dev.txt bandit[toml]==1.9.4 pip-audit
       - name: Run bandit
         run: bandit -c pyproject.toml -r .
       - name: Run pip-audit
